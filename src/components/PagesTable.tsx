@@ -32,7 +32,9 @@ const matchesFilter = (
   }
 };
 
-const getCanonicalStatus = (page: PageAuditResult): string => {
+type CanonicalStatus = "Missing" | "Multiple" | "Mismatch" | "OK";
+
+const getCanonicalStatus = (page: PageAuditResult): CanonicalStatus => {
   if (page.canonicalUrls.length === 0) {
     return "Missing";
   }
@@ -46,6 +48,13 @@ const getCanonicalStatus = (page: PageAuditResult): string => {
   );
 
   return hasMismatch ? "Mismatch" : "OK";
+};
+
+const canonicalStatusClass: Record<CanonicalStatus, string> = {
+  Missing: "text-red-400 font-semibold",
+  Multiple: "text-red-400 font-semibold",
+  Mismatch: "text-yellow-400 font-semibold",
+  OK: "text-zinc-400",
 };
 
 export const PagesTable = ({
@@ -163,10 +172,10 @@ export const PagesTable = ({
                     <td className="max-w-xs truncate px-4 py-3.5 text-zinc-400">
                       {page.title ?? "—"}
                     </td>
-                    <td className="px-4 py-3.5 text-zinc-400">
+                    <td className={`px-4 py-3.5 ${page.h1s.length === 1 ? "text-zinc-400" : "font-semibold text-red-400"}`}>
                       {page.h1s.length}
                     </td>
-                    <td className="px-4 py-3.5 text-zinc-400">
+                    <td className={`px-4 py-3.5 ${canonicalStatusClass[getCanonicalStatus(page)]}`}>
                       {getCanonicalStatus(page)}
                     </td>
                     <td className="px-4 py-3.5">
