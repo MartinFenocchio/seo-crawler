@@ -3,6 +3,7 @@
 import { Fragment, useMemo, useState } from "react";
 import type { PageAuditResult } from "@/lib/audit/types";
 import { getHighestSeverity, SeverityBadge } from "./SeverityBadge";
+import { CopyPromptButton } from "./CopyPromptButton";
 
 export type PageFilter = "all" | "errors" | "warnings" | "clean";
 
@@ -243,9 +244,14 @@ export const PagesTable = ({
                             </p>
                           </div>
                           <div>
-                            <p className="text-sm font-semibold text-zinc-200">
-                              Issues
-                            </p>
+                            <div className="flex items-center justify-between gap-3">
+                              <p className="text-sm font-semibold text-zinc-200">
+                                Issues
+                              </p>
+                              {page.issues.length > 0 && (
+                                <CopyPromptButton page={page} />
+                              )}
+                            </div>
                             {page.issues.length === 0 ? (
                               <p className="mt-2 text-sm text-[#54c473]">
                                 No issues on this page.
