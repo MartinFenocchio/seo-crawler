@@ -1,0 +1,41 @@
+---
+description: Local SEO Auditor — SDD workflow and implementation constraints
+alwaysApply: true
+---
+
+# Local SEO Auditor
+
+## Source of truth
+
+Before implementing, read the relevant doc:
+
+| Doc | Use when |
+|-----|----------|
+| `docs/SPEC.md` | Product behavior, URL/sitemap/crawl rules |
+| `docs/ARCHITECTURE.md` | Stack, types, API, file structure |
+| `docs/CHECKS.md` | SEO check rules and severities |
+| `docs/UI.md` | Components and layout |
+| `docs/TASKS.md` | Current phase — implement one phase at a time |
+| `docs/ACCEPTANCE.md` | Definition of done |
+
+## Workflow
+
+1. Check `docs/TASKS.md` for the next unchecked phase.
+2. Implement only that phase.
+3. Ensure TypeScript compiles.
+4. Mark tasks complete in `docs/TASKS.md`.
+5. Do not skip ahead or implement everything in one file.
+
+## Hard constraints
+
+- Next.js App Router, TypeScript, Tailwind
+- No database, auth, Playwright, AI APIs, or paid external services
+- Analyze raw server-rendered HTML only
+- Canonicals must match the audited environment (localhost ≠ production)
+- Default concurrency: 5 · timeout: 15s · User-Agent: `local-seo-auditor/1.0`
+- One check per file under `lib/audit/checks/`
+- Prioritize audit logic correctness over visual polish
+
+## Stack dependencies only
+
+`cheerio`, `fast-xml-parser`, `zod`, `p-limit` — no unnecessary packages.

@@ -12,8 +12,10 @@ import {
 import { checkCanonical } from "./checks/check-canonical";
 import { checkH1 } from "./checks/check-h1";
 import { checkHtmlContent, checkStatus } from "./checks/check-status";
+import { checkImages } from "./checks/check-images";
 import { checkInternalLinks } from "./checks/check-internal-links";
 import { checkMetaDescription } from "./checks/check-meta-description";
+import { checkOg } from "./checks/check-og";
 import { checkRobots } from "./checks/check-robots";
 import { checkTitle } from "./checks/check-title";
 import { createIssue } from "./checks/create-issue";
@@ -31,6 +33,44 @@ export const auditSite = async (inputUrl: string): Promise<AuditResult> => {
   const baseUrl = getBaseUrlFromInput(inputUrl);
   const sitemapUrl = getSitemapUrlFromInput(inputUrl);
   const auditWarnings: SeoIssue[] = [];
+
+  // Global robots.txt check
+  const robotsTxtUrl = `${baseUrl.replace(/\/$/, "")}/robots.txt`;
+  try {
+    const robotsTxtResult = await fetchUrl(robotsTxtUrl);
+    if (!robotsTxtResult.ok || robotsTxtResult.statusCode === 404) {
+      auditWarnings.push(
+        createIssue(
+          "robots-txt-missing",
+          "info",
+          "robots.txt not found",
+          `No robots.txt was found at ${robotsTxtUrl}.`,
+        ),
+      );
+    } else if (robotsTxtResult.body) {
+      const lines = robotsTxtResult.body.split("\n").map((l) => l.trim());
+      let inWildcardAgent = false;
+      for (const line of lines) {
+        const lower = line.toLowerCase();
+        if (lower.startsWith("user-agent:")) {
+          inWildcardAgent = lower.replace("user-agent:", "").trim() === "*";
+        }
+        if (inWildcardAgent && lower.replace("disallow:", "").trim() === "/") {
+          auditWarnings.push(
+            createIssue(
+              "robots-txt-disallow-all",
+              "warning",
+              "robots.txt blocks all crawlers",
+              `robots.txt contains "Disallow: /" under "User-agent: *", blocking all search engines.`,
+            ),
+          );
+          break;
+        }
+      }
+    }
+  } catch {
+    // Non-critical — ignore robots.txt fetch errors
+  }
 
   let sitemapXml: string;
 
@@ -125,6 +165,8 @@ export const auditSite = async (inputUrl: string): Promise<AuditResult> => {
         ...checkH1(parsed),
         ...checkCanonical(parsed, pageUrl),
         ...checkRobots(parsed),
+        ...checkOg(parsed),
+        ...checkImages(parsed),
       );
     }
 

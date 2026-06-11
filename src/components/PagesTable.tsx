@@ -1,7 +1,9 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
-import type { PageAuditResult } from "@/lib/audit/types";
+import type { CheckConfig } from "@/lib/audit/check-groups";
+import { filterVisibleIssues } from "@/lib/audit/check-groups";
+import type { PageAuditResult, SeoIssue } from "@/lib/audit/types";
 import { getHighestSeverity, SeverityBadge } from "./SeverityBadge";
 import { CopyPromptButton } from "./CopyPromptButton";
 
@@ -11,15 +13,16 @@ type PagesTableProps = {
   pages: PageAuditResult[];
   searchQuery: string;
   filter: PageFilter;
+  config: CheckConfig;
   issueTypeFilter?: string | null;
 };
 
 const matchesFilter = (
-  page: PageAuditResult,
+  visibleIssues: SeoIssue[],
   filter: PageFilter,
 ): boolean => {
-  const hasError = page.issues.some((issue) => issue.severity === "error");
-  const hasWarning = page.issues.some((issue) => issue.severity === "warning");
+  const hasError = visibleIssues.some((issue) => issue.severity === "error");
+  const hasWarning = visibleIssues.some((issue) => issue.severity === "warning");
 
   switch (filter) {
     case "errors":
@@ -62,6 +65,7 @@ export const PagesTable = ({
   pages,
   searchQuery,
   filter,
+  config,
   issueTypeFilter,
 }: PagesTableProps) => {
   const [expandedUrls, setExpandedUrls] = useState<Set<string>>(new Set());
@@ -70,13 +74,15 @@ export const PagesTable = ({
     const query = searchQuery.trim().toLowerCase();
 
     return pages.filter((page) => {
-      if (!matchesFilter(page, filter)) {
+      const visibleIssues = filterVisibleIssues(page.issues, config);
+
+      if (!matchesFilter(visibleIssues, filter)) {
         return false;
       }
 
       if (
         issueTypeFilter &&
-        !page.issues.some((issue) => issue.type === issueTypeFilter)
+        !visibleIssues.some((issue) => issue.type === issueTypeFilter)
       ) {
         return false;
       }
@@ -90,7 +96,7 @@ export const PagesTable = ({
         page.normalizedUrl.toLowerCase().includes(query)
       );
     });
-  }, [pages, searchQuery, filter, issueTypeFilter]);
+  }, [pages, searchQuery, filter, config, issueTypeFilter]);
 
   const handleToggleRow = (normalizedUrl: string) => {
     setExpandedUrls((current) => {
@@ -146,8 +152,9 @@ export const PagesTable = ({
           <tbody>
             {filteredPages.map((page) => {
               const isExpanded = expandedUrls.has(page.normalizedUrl);
+              const visibleIssues = filterVisibleIssues(page.issues, config);
               const highestSeverity = getHighestSeverity(
-                page.issues.map((issue) => issue.severity),
+                visibleIssues.map((issue) => issue.severity),
               );
 
               return (
@@ -181,7 +188,7 @@ export const PagesTable = ({
                     </td>
                     <td className="px-4 py-3.5">
                       <span className="inline-flex h-6 min-w-6 items-center justify-center rounded-full bg-[#54c473]/15 px-2 text-xs font-bold text-[#54c473]">
-                        {page.issues.length}
+                        {visibleIssues.length}
                       </span>
                     </td>
                     <td className="px-4 py-3.5">
@@ -248,17 +255,17 @@ export const PagesTable = ({
                               <p className="text-sm font-semibold text-zinc-200">
                                 Issues
                               </p>
-                              {page.issues.length > 0 && (
+                              {visibleIssues.length > 0 && (
                                 <CopyPromptButton page={page} />
                               )}
                             </div>
-                            {page.issues.length === 0 ? (
+                            {visibleIssues.length === 0 ? (
                               <p className="mt-2 text-sm text-[#54c473]">
                                 No issues on this page.
                               </p>
                             ) : (
                               <ul className="mt-2 space-y-2">
-                                {page.issues.map((issue) => (
+                                {visibleIssues.map((issue) => (
                                   <li
                                     key={issue.id}
                                     className="rounded-xl border border-white/8 bg-white/[0.02] p-3"

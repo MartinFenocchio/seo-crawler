@@ -39,6 +39,26 @@ export const parseHtml = (html: string, pageUrl: string): ParsedPage => {
   const robotsMeta =
     $("head meta[name='robots']").first().attr("content")?.trim() ?? null;
 
+  const ogTitle =
+    $("head meta[property='og:title']").first().attr("content")?.trim() ?? null;
+
+  const ogDescription =
+    $("head meta[property='og:description']").first().attr("content")?.trim() ?? null;
+
+  const ogImage =
+    $("head meta[property='og:image']").first().attr("content")?.trim() ?? null;
+
+  const twitterCard =
+    $("head meta[name='twitter:card']").first().attr("content")?.trim() ?? null;
+
+  const images: { src: string; alt: string | null }[] = [];
+
+  $("img").each((_, element) => {
+    const src = $(element).attr("src") ?? "";
+    const altAttr = $(element).attr("alt");
+    images.push({ src, alt: altAttr !== undefined ? altAttr : null });
+  });
+
   const internalLinks = new Set<string>();
 
   $("a[href]").each((_, element) => {
@@ -63,5 +83,10 @@ export const parseHtml = (html: string, pageUrl: string): ParsedPage => {
     canonicalUrls,
     robotsMeta,
     internalLinks: [...internalLinks],
+    ogTitle,
+    ogDescription,
+    ogImage,
+    twitterCard,
+    images,
   };
 };

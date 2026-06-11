@@ -1,7 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { computeSummary, filterVisibleIssues } from "@/lib/audit/check-groups";
 import type { AuditResult } from "@/lib/audit/types";
+import { useCheckConfig } from "@/hooks/useCheckConfig";
+import { CheckConfig } from "./CheckConfig";
+import { ExportButtons } from "./ExportButtons";
 import { IssuesOverview } from "./IssuesOverview";
 import { PagesTable, type PageFilter } from "./PagesTable";
 import { SeverityBadge } from "./SeverityBadge";
@@ -23,18 +27,37 @@ export const AuditResults = ({ result }: AuditResultsProps) => {
   const [filter, setFilter] = useState<PageFilter>("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [issueTypeFilter, setIssueTypeFilter] = useState<string | null>(null);
+  const { config, toggle, reset, activeCount, isAllActive } = useCheckConfig();
+
+  const summary = useMemo(
+    () => computeSummary(result.pages, config),
+    [result.pages, config],
+  );
+
+  const visibleAuditWarnings = useMemo(
+    () => filterVisibleIssues(result.auditWarnings, config),
+    [result.auditWarnings, config],
+  );
 
   return (
     <div className="space-y-6">
-      <SummaryCards result={result} />
+      <SummaryCards summary={summary} durationMs={result.durationMs} />
 
-      {result.auditWarnings.length > 0 && (
+      <CheckConfig
+        config={config}
+        activeCount={activeCount}
+        isAllActive={isAllActive}
+        onToggle={toggle}
+        onReset={reset}
+      />
+
+      {visibleAuditWarnings.length > 0 && (
         <div className="rounded-2xl border border-amber-500/20 bg-amber-500/10 p-4">
           <h2 className="text-sm font-semibold text-amber-300">
             Audit warnings
           </h2>
           <ul className="mt-2 space-y-2">
-            {result.auditWarnings.map((warning) => (
+            {visibleAuditWarnings.map((warning) => (
               <li
                 key={warning.id}
                 className="flex items-start gap-2 text-sm text-amber-200"
@@ -49,6 +72,7 @@ export const AuditResults = ({ result }: AuditResultsProps) => {
 
       <IssuesOverview
         pages={result.pages}
+        config={config}
         activeIssueType={issueTypeFilter}
         onFilterType={setIssueTypeFilter}
       />
@@ -63,6 +87,8 @@ export const AuditResults = ({ result }: AuditResultsProps) => {
           </div>
 
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+            <ExportButtons result={result} config={config} />
+
             <input
               type="search"
               value={searchQuery}
@@ -95,6 +121,7 @@ export const AuditResults = ({ result }: AuditResultsProps) => {
           pages={result.pages}
           searchQuery={searchQuery}
           filter={filter}
+          config={config}
           issueTypeFilter={issueTypeFilter}
         />
       </div>

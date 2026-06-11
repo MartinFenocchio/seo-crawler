@@ -1,7 +1,8 @@
-import type { AuditResult } from "@/lib/audit/types";
+import type { AuditSummary } from "@/lib/audit/types";
 
 type SummaryCardsProps = {
-  result: AuditResult;
+  summary: AuditSummary;
+  durationMs: number;
 };
 
 type SummaryCardProps = {
@@ -35,51 +36,51 @@ const SummaryCard = ({ label, value, tone = "default" }: SummaryCardProps) => {
   );
 };
 
-export const SummaryCards = ({ result }: SummaryCardsProps) => {
-  const durationSeconds = (result.durationMs / 1000).toFixed(1);
+export const SummaryCards = ({ summary, durationMs }: SummaryCardsProps) => {
+  const durationSeconds = (durationMs / 1000).toFixed(1);
 
   return (
     <div className="space-y-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         <SummaryCard
           label="Total pages"
-          value={result.summary.totalPages}
+          value={summary.totalPages}
           tone="brand"
         />
         <SummaryCard
           label="Pages with errors"
-          value={result.summary.pagesWithErrors}
-          tone={result.summary.pagesWithErrors > 0 ? "error" : "default"}
+          value={summary.pagesWithErrors}
+          tone={summary.pagesWithErrors > 0 ? "error" : "default"}
         />
         <SummaryCard
           label="Pages with warnings"
-          value={result.summary.pagesWithWarnings}
-          tone={result.summary.pagesWithWarnings > 0 ? "warning" : "default"}
+          value={summary.pagesWithWarnings}
+          tone={summary.pagesWithWarnings > 0 ? "warning" : "default"}
         />
         <SummaryCard
           label="Total errors"
-          value={result.summary.totalErrors}
-          tone={result.summary.totalErrors > 0 ? "error" : "default"}
+          value={summary.totalErrors}
+          tone={summary.totalErrors > 0 ? "error" : "default"}
         />
         <SummaryCard
           label="Total warnings"
-          value={result.summary.totalWarnings}
-          tone={result.summary.totalWarnings > 0 ? "warning" : "default"}
+          value={summary.totalWarnings}
+          tone={summary.totalWarnings > 0 ? "warning" : "default"}
         />
         <SummaryCard label="Audit duration" value={`${durationSeconds}s`} />
       </div>
 
       <div className="rounded-xl border border-white/8 bg-white/[0.02] px-4 py-3 text-sm text-zinc-400">
         <span className="font-semibold text-[#54c473]">
-          {result.summary.totalPages}
+          {summary.totalPages}
         </span>{" "}
         pages analyzed ·{" "}
         <span className="font-semibold text-red-300">
-          {result.summary.pagesWithErrors}
+          {summary.pagesWithErrors}
         </span>{" "}
         with errors ·{" "}
         <span className="font-semibold text-amber-300">
-          {result.summary.totalWarnings}
+          {summary.totalWarnings}
         </span>{" "}
         warnings ·{" "}
         <span className="font-semibold text-white">{durationSeconds}s</span>

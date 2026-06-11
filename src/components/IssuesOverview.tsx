@@ -1,7 +1,10 @@
+import type { CheckConfig } from "@/lib/audit/check-groups";
+import { filterVisibleIssues } from "@/lib/audit/check-groups";
 import type { PageAuditResult, SeoIssue } from "@/lib/audit/types";
 
 type IssuesOverviewProps = {
   pages: PageAuditResult[];
+  config: CheckConfig;
   onFilterType?: (issueType: string | null) => void;
   activeIssueType?: string | null;
 };
@@ -12,13 +15,13 @@ type IssueGroup = {
   count: number;
 };
 
-const buildIssueGroups = (pages: PageAuditResult[]): IssueGroup[] => {
+const buildIssueGroups = (pages: PageAuditResult[], config: CheckConfig): IssueGroup[] => {
   const groups = new Map<string, IssueGroup>();
 
   for (const page of pages) {
     const seenTypes = new Set<string>();
 
-    for (const issue of page.issues) {
+    for (const issue of filterVisibleIssues(page.issues, config)) {
       if (seenTypes.has(issue.type)) {
         continue;
       }
@@ -43,10 +46,11 @@ const buildIssueGroups = (pages: PageAuditResult[]): IssueGroup[] => {
 
 export const IssuesOverview = ({
   pages,
+  config,
   onFilterType,
   activeIssueType,
 }: IssuesOverviewProps) => {
-  const groups = buildIssueGroups(pages);
+  const groups = buildIssueGroups(pages, config);
 
   if (groups.length === 0) {
     return (

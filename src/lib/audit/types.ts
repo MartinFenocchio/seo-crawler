@@ -78,6 +78,11 @@ export type ParsedPage = {
   canonicalUrls: string[];
   robotsMeta: string | null;
   internalLinks: string[];
+  ogTitle: string | null;
+  ogDescription: string | null;
+  ogImage: string | null;
+  twitterCard: string | null;
+  images: { src: string; alt: string | null }[];
 };
 
 export type CrawledPageContext = {
