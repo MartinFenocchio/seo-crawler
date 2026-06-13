@@ -86,7 +86,7 @@ export const AuditResults = ({ result }: AuditResultsProps) => {
             </p>
           </div>
 
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+          <div className="flex flex-wrap items-center gap-2">
             <ExportButtons result={result} config={config} />
 
             <input
@@ -95,25 +95,23 @@ export const AuditResults = ({ result }: AuditResultsProps) => {
               onChange={(event) => setSearchQuery(event.target.value)}
               placeholder="Search by URL"
               aria-label="Search pages by URL"
-              className="field w-full px-3 py-2.5 text-sm sm:w-64"
+              className="field w-40 px-3 py-2 text-sm"
             />
 
-            <div className="flex flex-wrap gap-2">
-              {filterOptions.map((option) => (
-                <button
-                  key={option.value}
-                  type="button"
-                  onClick={() => setFilter(option.value)}
-                  className={
-                    filter === option.value
-                      ? "filter-btn filter-btn-active"
-                      : "filter-btn"
-                  }
-                >
-                  {option.label}
-                </button>
-              ))}
-            </div>
+            {filterOptions.map((option) => (
+              <button
+                key={option.value}
+                type="button"
+                onClick={() => setFilter(option.value)}
+                className={
+                  filter === option.value
+                    ? "filter-btn filter-btn-active"
+                    : "filter-btn"
+                }
+              >
+                {option.label}
+              </button>
+            ))}
           </div>
         </div>
 

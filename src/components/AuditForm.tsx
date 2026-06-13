@@ -74,7 +74,7 @@ export const AuditForm = ({ isLoading, error, onSubmit }: AuditFormProps) => {
               type="url"
               value={url}
               onChange={(event) => setUrl(event.target.value)}
-              placeholder="http://localhost:3000"
+              placeholder="https://litebox.ai/"
               disabled={isLoading}
               aria-label="URL to audit"
               className="field w-full py-3.5 pl-11 pr-4 disabled:cursor-not-allowed disabled:opacity-50"

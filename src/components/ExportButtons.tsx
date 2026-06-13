@@ -66,11 +66,11 @@ export const ExportButtons = ({ result, config }: ExportButtonsProps) => {
   const basename = `seo-audit-${slug}-${date}`;
 
   const handleJson = () => {
-    triggerDownload(
-      JSON.stringify(result, null, 2),
-      `${basename}.json`,
-      "application/json",
-    );
+    const clean = {
+      ...result,
+      pages: result.pages.map(({ internalLinks: _il, ...rest }) => rest),
+    };
+    triggerDownload(JSON.stringify(clean, null, 2), `${basename}.json`, "application/json");
   };
 
   const handleCsv = () => {

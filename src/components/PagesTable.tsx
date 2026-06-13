@@ -130,9 +130,6 @@ export const PagesTable = ({
                 URL
               </th>
               <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500">
-                Status
-              </th>
-              <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500">
                 Title
               </th>
               <th className="px-4 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-zinc-500">
@@ -171,11 +168,17 @@ export const PagesTable = ({
                     tabIndex={0}
                     aria-expanded={isExpanded}
                   >
-                    <td className="max-w-xs break-all px-4 py-3.5 font-mono text-xs text-zinc-300">
-                      {page.url}
-                    </td>
-                    <td className="px-4 py-3.5 text-zinc-400">
-                      {page.statusCode ?? "—"}
+                    <td className="max-w-xs break-all px-4 py-3.5 font-mono text-xs">
+                      <span
+                        className={`cursor-copy select-all ${page.statusCode !== null && page.statusCode >= 400 ? "text-red-400" : "text-zinc-300"}`}
+                        title="Click to copy URL"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigator.clipboard.writeText(page.url);
+                        }}
+                      >
+                        {page.url}
+                      </span>
                     </td>
                     <td className="max-w-xs truncate px-4 py-3.5 text-zinc-400">
                       {page.title ?? "—"}
@@ -204,7 +207,7 @@ export const PagesTable = ({
                   {isExpanded && (
                     <tr className="border-b border-white/5">
                       <td
-                        colSpan={7}
+                        colSpan={6}
                         className="border-l-2 border-l-[#54c473]/50 bg-black/20 px-4 py-5"
                       >
                         <div className="grid gap-4 lg:grid-cols-2">
